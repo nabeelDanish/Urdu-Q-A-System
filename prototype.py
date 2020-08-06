@@ -1,93 +1,104 @@
-# Load Stopwords
-def loadFile(file):
-	f = open(file, encoding='utf-8')
-	stopwords = f.read().splitlines()
-	return stopwords
+from stemmer import *
+from utility import *
 
-# Match Stopwords
-def checkInDict(word, dictionary):
-	inDict = False
-	for wrd in dictionary:
-		if word == wrd:
-			inDict = True
-			break
-	return inDict
+# wordMatch Function
+def wordMatch(score, sentence_keywords, question_keywords):
 
-# Get Sentences Functions
-def getSentences(passage, delimiter = '۔'):
-	sentence = ['']
-	numSentences = 0
-	for char in passage:
-		if char == delimiter:
-			numSentences = numSentences + 1
-			sentence.append('')
-		else:
-			sentence[numSentences] = sentence[numSentences] + char
-	return sentence
+	for i in range(len(sentence_keywords)):
+		if sentence_keywords[i] in question_keywords:
+			score = score + 3
 
-# Get Keywords
-def removeStopWords(tokens, stopwords):
-	keywords = [['']]
-	u = 0
-	v = 0
-	for i in range(len(tokens)):
+	return score
 
-		for j in range(len(tokens[i])):
-
-			if not(checkInDict(tokens[i][j], stopwords)):
-				keywords[u][v] = tokens[i][j]
-				keywords[u].append('')
-				v = v + 1
-		u = u + 1
-		v = 0
-		keywords.append([''])
-	keywords.pop()
-	return keywords
-
-# Get Tokens
-def tokenize(sentences, alphabets):
-	tokens = [['']]
-	for i in range(len(sentences)):
-		numWords = 0
-		for char in sentences[i]:
-			if not (char == ' ' or char == '،'):
-				tokens[i][numWords] = tokens[i][numWords] + char
-			else:
-				numWords = numWords + 1	
-				tokens[i].append('')
-		tokens.append([''])
-
-	tokens.pop()
-	return tokens
-
-# Get Sentence Scores
-def getSentenceScores(scores, active, passage_keywords, question_keywords):
+# Get Who Score
+def getWhoScore(scores, passage_keywords, question_keywords):
+	jobs = loadFile('source/jobs.txt')
+	persons = loadFile('source/persons.txt')
 
 	for i in range(len(passage_keywords)):
-		for j in range(len(question_keywords)):
-			found = False
-			for k in range(len(passage_keywords[i])):
-				if question_keywords[0][j] == passage_keywords[i][k]:
-					found = True
-					active[i] = True
-					break
-			if found:
-				scores[i] = scores[i] + 1
-	return scores, active
+		# Get WordMatch
+		scores[i] = wordMatch(scores[i], passage_keywords[i], question_keywords[0])
+
+		# Other Rules
+		for j in range(len(passage_keywords[i])):
+			if passage_keywords[i][j] in persons:
+				scores[i] = scores[i] + 6
+
+			if passage_keywords[i][j] in jobs:
+				scores[i] = scores[i] + 4
+
+	return scores
 
 # Get Numeral Score
-def getNumeralScore(scores, active, passage_keywords, numbers):
+def getHowManyScore(scores, passage_keywords, question_keywords, specificWord):
+	numbers = loadFile('source/numbers.txt')
 
-	new_active = [False] * len(passage_keywords)
 	for i in range(len(passage_keywords)):
+
+		# Get WordMatch
+		scores[i] = wordMatch(scores[i], passage_keywords[i], question_keywords[0])
+
+		# Other Rules
 		for j in range(len(passage_keywords[i])):
-			for k in range(len(numbers)):
 
-				if passage_keywords[i][j] == numbers[k] and active[i]:
-					scores[i] = scores[i] + 1
-					new_active[i] = True
+			if (((passage_keywords[i][j] in numbers) | (passage_keywords[i][j].isnumeric())) & (specificWord in passage_keywords[i])):
+				scores[i] = scores[i] + 3
 
-	return scores, new_active
+	return scores
+
+# Get Question Type
+def getQuestionType(question_tokens, stopwords):
+	whoKeywords = loadFile('source/whoKeywords.txt')
+	howManyKeywords = loadFile('source/howManyKeywords.txt')
+	whenKeywords = loadFile('source/whenKeywords.txt')
+
+	specificWord = ''
+	question_type = ''
+
+	for i in range(len(question_tokens)):
+		for j in range(len(question_tokens[i])):
+
+			# Checking whether the question is of type WHO
+			if (question_tokens[i][j] in whoKeywords):
+				question_type = 'WHO'
+				break
+
+			# Checking whether the question is of type HOW_MANY
+			if (question_tokens[i][j] in howManyKeywords):
+				question_type = 'HOW_MANY'
+				specificWord = question_tokens[i][j + 1]
+				if specificWord in stopwords:
+					specificWord = question_tokens[i][j - 1]
+
+				break
+
+			# Checking whether the question is of type WHEN
+			if (question_tokens[i][j] in whenKeywords):
+				question_type = 'WHEN'
+				break
+
+	return question_type, specificWord
+
+# Get When Score
+def getWhenScore(scores, keywords, question_keywords):
+	dates = loadFile('source/dates.txt')
+
+	for i in range(len(keywords)):
+		for j in range(len(keywords[i])):
+			if keywords[i][j] in dates:
+				scores[i] = scores[i] + 4
+				scores[i] = wordMatch(scores[i], keywords[i], question_keywords[0])
+
+	return scores
+
+
+# Running the Stemmer Function
+def runStemmer(keywords):
+	for i in range(len(keywords)):
+		for j in range(len(keywords[i])):
+			keywords[i][j] = removePostfix(keywords[i][j])
+
+	return keywords
 
 # Main Function
 def getAnswer(document, question_file):
@@ -102,32 +113,46 @@ def getAnswer(document, question_file):
 	sentence = getSentences(passage)
 	tokens = tokenize(sentence, alphabets)
 	keywords = removeStopWords(tokens, stopwords)
+	keywords = runStemmer(keywords)
 
 	# Reading and Processing the Question File
 	f = open(question_file, encoding = 'utf-8')
 	question = f.read()
-	question_sentence = getSentences(question, '؟')
+	question_sentence = getSentences(question, ['؟'])
 	question_tokens = tokenize(question_sentence, alphabets)
+	question_type, specificWord = getQuestionType(question_tokens, stopwords)
 	question_keywords = removeStopWords(question_tokens, stopwords)
+	question_keywords = runStemmer(question_keywords)
+	question_keywords.pop()
 
-	# Getting the Scores
+	# Getting the Scores According to Question Types
 	scores = [0] * len(sentence)
-	active = [False] * len(sentence)
 
-	scores, active = getSentenceScores(scores, active, keywords, question_keywords)
-	# scores, active = getNumeralScore(scores, active, keywords, numbers)
+	if question_type == 'WHO':
+		scores = getWhoScore(scores, keywords, question_keywords)
 
+	if question_type == 'HOW_MANY':
+		scores = getHowManyScore(scores, keywords, question_keywords, specificWord)
+
+	if question_type == 'WHEN':
+		scores = getWhenScore(scores, keywords, question_keywords)
+
+	# Getting the all the Maximum Answers
 	maxScore = max(scores)
-	index = 0
+	indices = []
 	for i in range(len(scores)):
 		if scores[i] == maxScore:
-			index = i
-			break
+			indices.append(i)
+
+	f = open('output/answer.txt', 'w', encoding = 'utf-8')
 
 	# Retrieving the Answer
-	answer = sentence[index]
-	f = open('output/answer.txt', 'w', encoding = 'utf-8')
-	f.write(answer)
+	for i in range(len(indices)):
+		answer = sentence[indices[i]]
+		f.write(answer)
+		f.write("\n\n")
+
+	# Main Function Ends
 
 	# Debugging Part Ends
 	print(scores)
@@ -148,4 +173,20 @@ def getAnswer(document, question_file):
 		for j in range(len(question_keywords[i])):
 			f.write(question_keywords[i][j])
 			f.write("\n")
-	# Debugging Part Starts
+
+	f = open('debug/question_tokens.txt', 'w', encoding='utf-8')
+	for i in range(len(question_tokens)):
+		for j in range(len(question_tokens[i])):
+			f.write(question_tokens[i][j])
+			f.write("\n")
+
+	f = open('debug/sentences.txt', 'w', encoding='utf-8')
+	for i in range(len(sentence)):
+		f.write(sentence[i])
+		f.write("\n")
+
+	# Debugging Part Ends
+
+# Debugging Part Starts
+getAnswer("input/0002.txt", "input/question.txt")
+# Debugging Part Ends
