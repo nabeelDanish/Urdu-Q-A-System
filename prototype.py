@@ -42,7 +42,7 @@ def getHowManyScore(scores, passage_keywords, question_keywords, specificWord):
 		for j in range(len(passage_keywords[i])):
 
 			if (((passage_keywords[i][j] in numbers) | (passage_keywords[i][j].isnumeric())) & (specificWord in passage_keywords[i])):
-				scores[i] = scores[i] + 3
+				scores[i] = scores[i] + 4
 
 	return scores
 
@@ -51,6 +51,7 @@ def getQuestionType(question_tokens, stopwords):
 	whoKeywords = loadFile('source/whoKeywords.txt')
 	howManyKeywords = loadFile('source/howManyKeywords.txt')
 	whenKeywords = loadFile('source/whenKeywords.txt')
+	whereKeywords = loadFile('source/whereKeywords.txt')
 
 	specificWord = ''
 	question_type = ''
@@ -69,12 +70,16 @@ def getQuestionType(question_tokens, stopwords):
 				specificWord = question_tokens[i][j + 1]
 				if specificWord in stopwords:
 					specificWord = question_tokens[i][j - 1]
-
 				break
 
 			# Checking whether the question is of type WHEN
 			if (question_tokens[i][j] in whenKeywords):
 				question_type = 'WHEN'
+				break
+
+			# Checking whether the question is of type WHERE
+			if (question_tokens[i][j] in whereKeywords):
+				question_type = 'WHERE'
 				break
 
 	return question_type, specificWord
@@ -85,11 +90,36 @@ def getWhenScore(scores, keywords, question_keywords):
 
 	for i in range(len(keywords)):
 		for j in range(len(keywords[i])):
-			if keywords[i][j] in dates:
+			if ((keywords[i][j] in dates) | ((len(keywords[i][j]) == 4) & (keywords[i][j].isnumeric()))):
 				scores[i] = scores[i] + 4
 				scores[i] = wordMatch(scores[i], keywords[i], question_keywords[0])
+			# End if
+		# End for
+	# End for
 
 	return scores
+# End of Function
+
+# Get Where Score
+def getWhereScore(scores, keywords, question_keywords):
+	locations = loadFile('source/locations.txt')
+	cities = loadFile('source/cities.txt')
+	prepositions = loadFile('source/prepositions.txt')
+
+	for i in range(len(keywords)):
+		scores[i] = wordMatch(scores[i], keywords[i], question_keywords[0])
+
+		for j in range(len(keywords[i])):
+			if (keywords[i][j] in prepositions):
+				scores[i] = scores[i] + 4
+			if ((keywords[i][j] in locations) | (keywords[i][j] in cities)):
+				scores[i] = scores[i] + 6
+			#Endif
+		# End of for loop
+	# End of for loop
+
+	return scores
+# End of Function
 
 
 # Running the Stemmer Function
@@ -123,6 +153,7 @@ def getAnswer(document, question_file):
 	question_type, specificWord = getQuestionType(question_tokens, stopwords)
 	question_keywords = removeStopWords(question_tokens, stopwords)
 	question_keywords = runStemmer(question_keywords)
+	specificWord = removePostfix(specificWord)
 	question_keywords.pop()
 
 	# Getting the Scores According to Question Types
@@ -136,6 +167,9 @@ def getAnswer(document, question_file):
 
 	if question_type == 'WHEN':
 		scores = getWhenScore(scores, keywords, question_keywords)
+
+	if question_type == 'WHERE':
+		scores = getWhereScore(scores, keywords, question_keywords)
 
 	# Getting the all the Maximum Answers
 	maxScore = max(scores)
@@ -185,8 +219,11 @@ def getAnswer(document, question_file):
 		f.write(sentence[i])
 		f.write("\n")
 
+	f = open('debug/specificWord.txt', 'w', encoding='utf-8') 
+	f.write(specificWord)
+
 	# Debugging Part Ends
 
 # Debugging Part Starts
-getAnswer("input/0002.txt", "input/question.txt")
+getAnswer("input/0007.txt", "input/question.txt")
 # Debugging Part Ends

@@ -14,7 +14,7 @@ def checkInDict(word, dictionary):
 	return inDict
 
 # Get Sentences Functions
-def getSentences(passage, delimiter = ['۔', '،']):
+def getSentences(passage, delimiter = ['۔']):
 	sentence = ['']
 	numSentences = 0
 	for char in passage:
@@ -29,18 +29,23 @@ def getSentences(passage, delimiter = ['۔', '،']):
 def removeStopWords(tokens, stopwords):
 	keywords = [['']]
 	u = 0
-	v = 0
+	first = True
 	for i in range(len(tokens)):
 
 		for j in range(len(tokens[i])):
 
 			if not(checkInDict(tokens[i][j], stopwords)):
-				keywords[u][v] = tokens[i][j]
-				keywords[u].append('')
-				v = v + 1
+				if first:
+					keywords[u][0] = tokens[i][j]
+					first = False
+				else:
+					keywords[u].append(tokens[i][j])
+		# End of for j
 		u = u + 1
-		v = 0
 		keywords.append([''])
+		first = True
+	# End of For Loop
+
 	keywords.pop()
 	return keywords
 
@@ -56,6 +61,5 @@ def tokenize(sentences, alphabets):
 				numWords = numWords + 1	
 				tokens[i].append('')
 		tokens.append([''])
-
 	tokens.pop()
 	return tokens
