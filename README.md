@@ -10,9 +10,16 @@ Version 0.1:
 
 Version 0.2:
 
-  1. Added More rules for Who and How Many Question type
+  1. Added rules for Who and How Many Question type
   2. improved the sentence score system
   3. using a postfix stemmer to retrieve the root of the word
   4. using Person Dictionary with names and titles to perform NER 
   5. *Important*: use the keywords (kitnay/kitni) near the object you wish to retrieve the quantity for: 
       Example: Dhamakay mai kitnay afrad halak hoay?
+      
+Version 0.3:
+ 
+ 1. Added rules for When and Where question type
+ 2. using date related words for time expressions
+ 3. using locations and city names, along with locational pronouns to identify locations in a sentence
+ 4. tested against some SQUAD dataset articles
