@@ -3,9 +3,15 @@ A Rule based Urdu Q/A System that inputs a document and a question file and outp
 
 Run the prototype.py file with parameters (document_file, question_file) placed in the input folder. The output is in the answer.txt in the output file.
 Added a result.xlxs file that tracks the models accuracy on articles from the SQUAD Dataset (Using Google Translate for both document and question). Link to the articles below. for every passage, there are 5 questions. 
-Results saved in the form of yes if the answer matched the websites answer and no if not. Accuracy computed
+Results saved in the form of yes if the answer matched the websites answer and no if not. Accuracy computed.
+
 Link to Articles:
+
   1973_oil_crisis: https://rajpurkar.github.io/SQuAD-explorer/explore/v2.0/dev/1973_oil_crisis.html?model=nlnet%20(single%20model)%20(Microsoft%20Research%20Asia)&version=v2.0
+  
+  Harvard_University: https://rajpurkar.github.io/SQuAD-explorer/explore/v2.0/dev/Harvard_University.html?model=nlnet%20(single%20model)%20(Microsoft%20Research%20Asia)&version=v2.0
+  
+  Oxygen: https://rajpurkar.github.io/SQuAD-explorer/explore/v2.0/dev/Oxygen.html?model=nlnet%20(single%20model)%20(Microsoft%20Research%20Asia)&version=v2.0
 
 Version 0.1: 
 
