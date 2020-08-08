@@ -40,22 +40,26 @@ def removeStopWords(tokens, stopwords):
 					first = False
 				else:
 					keywords[u].append(tokens[i][j])
-		# End of for j
-		u = u + 1
-		keywords.append([''])
-		first = True
+
+		if not(first):
+			# End of for j
+			u = u + 1
+			keywords.append([''])
+			first = True
 	# End of For Loop
 
 	keywords.pop()
+	clearExtraChar(keywords)
 	return keywords
 
 # Get Tokens
 def tokenize(sentences, alphabets):
 	tokens = [['']]
+	delimiters = [' ', '،', '-', '–']
 	for i in range(len(sentences)):
 		numWords = 0
 		for char in sentences[i]:
-			if not (char == ' ' or char == '،'):
+			if not (char in delimiters):
 				tokens[i][numWords] = tokens[i][numWords] + char
 			else:
 				numWords = numWords + 1	
@@ -63,3 +67,12 @@ def tokenize(sentences, alphabets):
 		tokens.append([''])
 	tokens.pop()
 	return tokens
+
+# Clear Function
+def clearExtraChar(keywords):
+
+	removeList = ['']
+	for i in range(len(keywords)):
+		keywords[i] = [j for j in keywords[i] if j not in removeList]
+
+	return keywords
