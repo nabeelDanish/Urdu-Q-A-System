@@ -50,6 +50,9 @@ def removeStopWords(tokens, stopwords):
 
 	keywords.pop()
 	clearExtraChar(keywords)
+	for i in range(len(keywords)):
+		keywords[i] = removeDuplicates(keywords[i])
+		
 	return keywords
 
 # Get Tokens
@@ -76,3 +79,7 @@ def clearExtraChar(keywords):
 		keywords[i] = [j for j in keywords[i] if j not in removeList]
 
 	return keywords
+
+# Removing Duplicated from the list
+def removeDuplicates(x):
+	return list(dict.fromkeys(x))

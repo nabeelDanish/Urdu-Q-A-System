@@ -106,19 +106,27 @@ def getQuestionType(question_tokens):
 
 			# Checking whether the question is of type WHO
 			if (question_tokens[i][j] in whoKeywords):
-				if (question_tokens[i][j + 1] in kon_what):
-					question_type = 'WHAT'
-				else:
-					question_type = 'WHO'
-				break
+				if (j != len(question_tokens[i]) - 1):
+					if (question_tokens[i][j + 1] in kon_what):
+						question_type = 'WHAT'
+					else:
+						question_type = 'WHO'
+					break
+			# End if WHO 
 
 			# Checking whether the question is of type HOW_MANY
 			if (question_tokens[i][j] in howManyKeywords):
 				question_type = 'HOW_MANY'
-				specificWord = question_tokens[i][j + 1]
-				if specificWord in stopwords:
-					specificWord = question_tokens[i][j - 1]
-				break
+
+				if (j != len(question_tokens[i]) - 1):
+					specificWord = question_tokens[i][j + 1]
+					if specificWord in stopwords:
+
+						if (j != 0):
+							specificWord = question_tokens[i][j - 1]
+					break
+
+			# End if
 
 			# Checking whether the question is of type WHEN
 			if (question_tokens[i][j] in whenKeywords):
@@ -133,13 +141,29 @@ def getQuestionType(question_tokens):
 
 			# Checking whether the question is of type WHAT
 			if (question_tokens[i][j] in whatKeywords):
-				if ((question_tokens[i][j - 1] in amount) | (question_tokens[i][j + 1] in amount)):
-					question_type = 'HOW_MANY'
-				if ((question_tokens[i][j - 1] in reasons) | (question_tokens[i][j + 1] in reasons)):
-					question_type = 'WHY'
+				if (j != 0):
+					if (question_tokens[i][j - 1] in amount):
+						question_type = 'HOW_MANY'
+						break
+
+				if (j != len(question_tokens[i]) - 1):
+					if (question_tokens[i][j + 1] in amount):
+						question_type = 'HOW_MANY'
+						break
+
+				if (j != 0):
+					if (question_tokens[i][j - 1] in reasons):
+						question_type = 'WHY'
+						break
+
+				if (j != len(question_tokens[i]) - 1):
+					if (question_tokens[i][j + 1] in reasons):
+						question_type = 'WHY'
+						break
+
 				else:
 					question_type = 'WHAT'
-				break
+					break
 
 			# Checking whether the question is of type WHY
 			if (question_tokens[i][j] in whyKeywords):
@@ -406,6 +430,6 @@ def getAnswer(document, question_file, answer_file, debugging = False):
 
 # End of Function
 # getAnswer(
-# 	"input/1973_oil_crisis/passages/0010.txt", 
-# 	"input/1973_oil_crisis/questions/question_10_5.txt", 
+# 	"input/Harvard_University/passages/0004.txt", 
+# 	"input/Harvard_University/questions/question_4_5.txt", 
 # 	'output/answer_5.txt', debugging = True)
