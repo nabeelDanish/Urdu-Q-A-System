@@ -108,7 +108,18 @@ def getQuestionType(question_tokens):
 			if (question_tokens[i][j] in whoKeywords):
 				if (j != len(question_tokens[i]) - 1):
 					if (question_tokens[i][j + 1] in kon_what):
-						question_type = 'WHAT'
+						if (question_tokens[i][j + 2] in locations):
+							question_type = 'WHERE'
+							break
+						if (question_type[i][j + 2] in dates):
+							question_type = 'WHEN'
+							break
+						if (question_type[i][j + 2] in jobs):
+							question_type = 'WHO'
+							break
+						else:
+							question_type = 'WHAT'
+							break
 					else:
 						question_type = 'WHO'
 					break
@@ -145,22 +156,17 @@ def getQuestionType(question_tokens):
 					if (question_tokens[i][j - 1] in amount):
 						question_type = 'HOW_MANY'
 						break
-
-				if (j != len(question_tokens[i]) - 1):
-					if (question_tokens[i][j + 1] in amount):
-						question_type = 'HOW_MANY'
-						break
-
-				if (j != 0):
 					if (question_tokens[i][j - 1] in reasons):
 						question_type = 'WHY'
 						break
 
 				if (j != len(question_tokens[i]) - 1):
+					if (question_tokens[i][j + 1] in amount):
+						question_type = 'HOW_MANY'
+						break
 					if (question_tokens[i][j + 1] in reasons):
 						question_type = 'WHY'
 						break
-
 				else:
 					question_type = 'WHAT'
 					break
@@ -172,7 +178,7 @@ def getQuestionType(question_tokens):
 			# Handling the "Kis" Cases
 			if (question_tokens[i][j] in kis):
 				# Who Case
-				if (question_tokens[i][j + 1] in kis_who):
+				if ((question_tokens[i][j + 1] in kis_who) | (question_tokens[i][j + 1] in jobs)):
 					question_type = 'WHO'
 					break
 				# When Case
@@ -391,7 +397,11 @@ def getAnswer(document, question_file, answer_file, debugging = False):
 	# -----------------------------------------------------------------------
 	# Debugging Part Ends
 	if debugging:
-		print(scores)
+		f = open('debug/scores.txt', 'w')
+		for i in range(len(scores)):
+			f.write(str(scores[i]))
+			f.write("\n")
+
 		f = open('debug/keywords.txt', 'w', encoding = 'utf-8')
 		for i in range(len(keywords)):
 			for j in range(len(keywords[i])):
@@ -427,9 +437,3 @@ def getAnswer(document, question_file, answer_file, debugging = False):
 
 	# Debugging Part Ends
 	# -----------------------------------------------------------------------
-
-# End of Function
-# getAnswer(
-# 	"input/Harvard_University/passages/0004.txt", 
-# 	"input/Harvard_University/questions/question_4_5.txt", 
-# 	'output/answer_5.txt', debugging = True)
