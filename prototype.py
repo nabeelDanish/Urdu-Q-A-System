@@ -319,18 +319,18 @@ def runStemmer(keywords):
 # =======================================================================
 
 # Main Function
-def getAnswer(document, question_file, answer_file, debugging = False):
+def getAnswer(document, question, debugging = False):
 
 	# -----------------------------------------------------------------------
 	# Reading and processing Files
 	f = open(document, encoding='utf-8')
 	passage = f.read()
-	f = open(question_file, encoding = 'utf-8')
-	question = f.read()
 
 	# Getting Sentences
 	sentence = getSentences(passage)
-	question_sentence = getSentences(question, ['؟'])
+	question_sentence = ['']
+	question_sentence[0] = question
+	question_sentence.append('')
 
 	# Running Tokenizer
 	tokens = tokenize(sentence, alphabets)
@@ -351,7 +351,7 @@ def getAnswer(document, question_file, answer_file, debugging = False):
 
 	# -----------------------------------------------------------------------
 	# Getting the Scores According to Question Types
-	scores = [0] * len(sentence)
+	scores = [0] * len(keywords)
 
 	if question_type == 'WHO':
 		scores = getWhoScore(scores, keywords, question_keywords)
@@ -383,15 +383,14 @@ def getAnswer(document, question_file, answer_file, debugging = False):
 		if scores[i] == maxScore:
 			indices.append(i)
 
-	f = open(answer_file, 'w', encoding = 'utf-8')
+	answers = ['']
 
 	# Outputting the Answers
 	for i in range(len(indices)):
-		answer = sentence[indices[i]]
-		answer = answer + '۔'
-		f.write(answer)
-		f.write("\n\n")
-
+		answers[i] = sentence[indices[i]]
+		answers[i] = answers[i] + '۔'
+		answers.append('')
+	answers.pop()
 	# Main Function Ends
 
 	# -----------------------------------------------------------------------
@@ -433,7 +432,9 @@ def getAnswer(document, question_file, answer_file, debugging = False):
 
 		f = open('debug/specificWord.txt', 'w', encoding='utf-8') 
 		f.write(specificWord)
-	# End if
 
+	return sentence[indices[0]]
+
+	# End if
 	# Debugging Part Ends
 	# -----------------------------------------------------------------------
