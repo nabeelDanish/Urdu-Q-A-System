@@ -107,14 +107,15 @@ def getQuestionType(question_tokens):
 			# Checking whether the question is of type WHO
 			if (question_tokens[i][j] in whoKeywords):
 				if (j != len(question_tokens[i]) - 1):
-					if (question_tokens[i][j + 1] in kon_what):
+					if ((question_tokens[i][j + 1] in kon_what) & (j < len(question_tokens[i]) - 2)):
+
 						if (question_tokens[i][j + 2] in locations):
 							question_type = 'WHERE'
 							break
-						if (question_type[i][j + 2] in dates):
+						if (question_tokens[i][j + 2] in dates):
 							question_type = 'WHEN'
 							break
-						if (question_type[i][j + 2] in jobs):
+						if (question_tokens[i][j + 2] in jobs):
 							question_type = 'WHO'
 							break
 						else:
