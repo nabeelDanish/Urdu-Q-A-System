@@ -83,3 +83,20 @@ def clearExtraChar(keywords):
 # Removing Duplicated from the list
 def removeDuplicates(x):
 	return list(dict.fromkeys(x))
+
+# Return Year
+def checkIfYear(word):
+	if (len(word) == 5):
+		if (word[0] == 'ء'):
+			word = word[1:]
+
+		elif (word[-1] == 'ء'):
+			word = word[:-1]
+
+		if (word.isnumeric()):
+			return True
+		return False
+
+	elif ((len(word) == 4) & (word.isnumeric())):
+		return True
+	return False

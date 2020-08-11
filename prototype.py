@@ -202,11 +202,20 @@ def getQuestionType(question_tokens):
 # Get When Score
 def getWhenScore(scores, keywords, question_keywords):
 	
+	matchDone = [False] * len(keywords)
+
 	for i in range(len(keywords)):
 		for j in range(len(keywords[i])):
-			if ((keywords[i][j] in dates) | ((len(keywords[i][j]) == 4) & (keywords[i][j].isnumeric()))):
-				scores[i] = scores[i] + good_clue
+
+			if not (matchDone[i]):
 				scores[i] = wordMatch(scores[i], keywords[i], question_keywords[0])
+				matchDone[i] = True
+
+			if ((matchDone[i]) & (scores[i] > 0)):
+
+				if ((keywords[i][j] in dates) | (checkIfYear(keywords[i][j]))):
+					scores[i] = scores[i] + good_clue
+
 			# End if
 		# End for
 	# End for
@@ -430,10 +439,11 @@ def getAnswer(document, question, debugging = False):
 			f.write(sentence[i])
 			f.write("\n")
 
-		f = open('debug/specificWord.txt', 'w', encoding='utf-8') 
-		f.write(specificWord)
+		f = open('debug/debug.txt', 'w', encoding='utf-8') 
+		f.write('Specific Word = ' + specificWord)
+		f.write('Question Type = ' + question_type)
 
-	return sentence[indices[0]]
+	return answers
 
 	# End if
 	# Debugging Part Ends
